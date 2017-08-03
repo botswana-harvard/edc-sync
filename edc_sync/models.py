@@ -56,7 +56,8 @@ class IncomingTransaction(TransactionMixin, BaseUuidModel):
                         inserted += self._deserialize_insert_tx(
                             deserialized_object)
                     elif self.action == 'U':
-                        updated += self._deserialize_update_tx(deserialized_object)
+                        updated += self._deserialize_update_tx(
+                            deserialized_object)
                     else:
                         raise SyncError(
                             'Unexpected value for action. Got {}'.format(
@@ -73,11 +74,24 @@ class IncomingTransaction(TransactionMixin, BaseUuidModel):
             print('Failed to deserialized the record. Got {}'.format(str(e)))
         return inserted, updated, deleted
 
+    def save_tx_obj(self, obj=None, m2m_data=None):
+        """Saves a deserialized model object.
+
+        Uses save_base to avoid running code in model.save() and
+        to avoid triggering signals (if raw=True).
+        """
+        m2m_data = {} if m2m_data is None else m2m_data
+        obj.save_base(raw=True)
+        for attr, values in m2m_data.items():
+            for value in values:
+                getattr(obj, attr).add(value)
+
     def _deserialize_insert_tx(self, deserialized_object):
         play = 0
         with transaction.atomic():
             try:
-                deserialized_object.object.save_base(raw=True)
+                self.save_tx_obj(
+                    deserialized_object.object, deserialized_object.m2m_data)
                 play = 1
             except IntegrityError as e:
                 print("Failed to play transaction. Got {}.".format(str(e)))
