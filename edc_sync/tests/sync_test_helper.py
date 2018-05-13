@@ -1,10 +1,9 @@
 import json
 
-from unittest.case import TestCase
 from django.apps import apps as django_apps
 from django.core.exceptions import MultipleObjectsReturned
-
 from edc_base.model_mixins import ListModelMixin
+from unittest.case import TestCase
 
 from ..models import OutgoingTransaction
 from ..transaction import deserialize
@@ -17,14 +16,16 @@ class SyncTestHelperError(Exception):
 class SyncTestHelper(TestCase):
 
     def sync_test_natural_key_attr(self, *app_labels, exclude_models=None):
-        """Asserts all models in given apps have a natural_key model method.
+        """Asserts all models in given apps have a
+        natural_key model method.
         """
         exclude_models = exclude_models or []
         for app_label in app_labels:
             models = django_apps.get_app_config(app_label).get_models()
             for model in models:
-                if (model._meta.label_lower not in exclude_models and
-                        not issubclass(model, ListModelMixin)):
+                if (model._meta.label_lower not in exclude_models
+                    and not issubclass(model, ListModelMixin)
+                        and '.tests.' not in model.__module__):
                     self.assertTrue(
                         'natural_key' in dir(model),
                         'Model method \'natural_key\' missing. Got \'{}\'.'.format(
@@ -38,16 +39,17 @@ class SyncTestHelper(TestCase):
         for app_label in app_labels:
             models = django_apps.get_app_config(app_label).get_models()
             for model in models:
-                if (model._meta.label_lower not in exclude_models and
-                        not issubclass(model, ListModelMixin)):
+                if (model._meta.label_lower not in exclude_models
+                    and not issubclass(model, ListModelMixin)
+                        and '.tests.' not in model.__module__):
                     self.assertTrue(
                         'get_by_natural_key' in dir(model.objects),
                         f'Manager method \'get_by_natural_key\' missing. '
                         f'Got \'{model._meta.label_lower}\'.')
 
     def sync_test_natural_keys(self, complete_required_crfs):
-        """Asserts tuple from natural_key when passed to get_by_natural_key
-        successfully gets the model instance.
+        """Asserts tuple from natural_key when passed to
+        get_by_natural_key successfully gets the model instance.
         """
         for objs in complete_required_crfs.values():
             for obj in objs:
@@ -74,11 +76,10 @@ class SyncTestHelper(TestCase):
                     visit_code=visit.visit_code,
                     visit=visit,
                     visit_attr=visit_attr,
-                    subject_identifier=visit.subject_identifier)
-            })
+                    subject_identifier=visit.subject_identifier)})
         self.sync_test_natural_keys(complete_required_crfs)
 
-    def sync_test_serializers_for_visit(self, complete_required_crfs, verbose=None):
+    def sync_test_serializers_for_visit(self, complete_required_crfs):
         """Assert CRF model instances have transactions and that the
         transactions can be deserialized and compared to their original
         model instances.
@@ -89,13 +90,11 @@ class SyncTestHelper(TestCase):
                     outgoing_transaction = OutgoingTransaction.objects.get(
                         tx_name=obj._meta.label_lower,
                         tx_pk=obj.pk)
-                    self.sync_test_deserialize(
-                        obj, outgoing_transaction, verbose=verbose)
+                    self.sync_test_deserialize(obj, outgoing_transaction)
                 except MultipleObjectsReturned:
                     for outgoing_transaction in OutgoingTransaction.objects.filter(
                             tx_name=obj._meta.label_lower, tx_pk=obj.pk):
-                        self.sync_test_deserialize(
-                            obj, outgoing_transaction, verbose=verbose)
+                        self.sync_test_deserialize(obj, outgoing_transaction)
                 except OutgoingTransaction.DoesNotExist:
                     self.fail('OutgoingTransaction.DoesNotExist unexpectedly '
                               f'raised for {obj._meta.label_lower}')
