@@ -12,7 +12,7 @@ def create_auth_token(sender, instance, raw, created, **kwargs):
     """
     if not raw:
         if created:
-            sender.objects.create(user=instance)
+            sender.objects.create(user=instance.user)
 
 
 @receiver(m2m_changed, weak=False, dispatch_uid='serialize_m2m_on_save')

@@ -9,6 +9,7 @@ logger = logging.getLogger('edc_sync')
 
 
 class TestLogger(TestCase):
+    databases = '__all__'
 
     def setUp(self):
         self.src_path = os.path.join(tempfile.gettempdir(), 'src')
