@@ -6,15 +6,6 @@ from rest_framework.authtoken.models import Token
 from .site_sync_models import site_sync_models
 
 
-@receiver(post_save, sender=Token)
-def create_auth_token(sender, instance, raw, created, **kwargs):
-    """Create token when a user is created (from rest_framework).
-    """
-    if not raw:
-        if created:
-            sender.objects.create(user=instance.user)
-
-
 @receiver(m2m_changed, weak=False, dispatch_uid='serialize_m2m_on_save')
 def serialize_m2m_on_save(sender, action, instance, using, **kwargs):
     """ Part of the serialize transaction process that ensures m2m are

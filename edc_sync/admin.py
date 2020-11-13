@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin.sites import NotRegistered
 
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.admin import TokenAdmin
@@ -10,7 +11,10 @@ from .models import IncomingTransaction, OutgoingTransaction, Client, Server
 # if you have not declared 'rest_framework.authtoken' in INSTALLED_APPS.
 
 # unregister to re-register with our admin class
-admin.site.unregister(Token)
+try:
+    admin.site.unregister(Token)
+except NotRegistered:
+    pass
 
 
 @admin.register(Token, site=edc_sync_admin)
