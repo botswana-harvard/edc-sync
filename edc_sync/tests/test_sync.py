@@ -13,7 +13,7 @@ from .models import TestModel, BadTestModel, AnotherBadTestModel, YetAnotherBadT
 from .models import TestModelWithFkProtected
 from .models import TestSyncModelNoHistoryManager, TestSyncModelNoUuid
 
-Crypt = django_apps.get_app_config('django_crypto_fields').model
+Crypt = django_apps.get_model('django_crypto_fields.crypt')
 
 edc_device_app_config = django_apps.get_app_config('edc_device')
 site_sync_models
@@ -21,7 +21,7 @@ site_sync_models
 
 class TestSync(TestCase):
 
-    multi_db = True
+    databases = '__all__'
 
     def setUp(self):
         site_sync_models.registry = {}

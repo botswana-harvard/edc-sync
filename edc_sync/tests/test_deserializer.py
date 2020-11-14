@@ -30,7 +30,7 @@ def my_test_parser(json_text):
 
 class TestDeserializer1(TestCase):
 
-    multi_db = True
+    databases = '__all__'
 
     def setUp(self):
         site_sync_models.registry = {}
@@ -88,7 +88,7 @@ class TestDeserializer1(TestCase):
 
 class TestDeserializer2(TestCase):
 
-    multi_db = True
+    databases = '__all__'
 
     def setUp(self):
         site_sync_models.registry = {}
@@ -316,7 +316,7 @@ class TestDeserializer2(TestCase):
 
 class TestDeserializer3(TestCase):
 
-    multi_db = True
+    databases = '__all__'
 
     def setUp(self):
         site_sync_models.registry = {}
