@@ -64,7 +64,10 @@ class TransactionDeserializer:
         for transaction in transactions:
             json_text = self.aes_decrypt(cipher_text=transaction.tx)
             json_text = self.custom_parser(json_text)
+            json_text = self.contact_date_update(json_text)
             deserialized = next(self.deserialize(json_text=json_text))
+
+ 
             if not deserialize_only:
                 if transaction.action == DELETE:
                     deserialized.object.delete()
@@ -74,6 +77,21 @@ class TransactionDeserializer:
                         m2m_data=deserialized.m2m_data)
                 transaction.is_consumed = True
                 transaction.save()
+
+    def contact_date_update(self, json_text=None):
+        import json
+
+        json_text = json_text
+        json_list = json.loads(json_text)
+        json_dict = json_list[0]
+        json_fields =  json_dict.get('fields')
+        if json_fields.get('contact_date'):
+            contact_date = json_fields.get('contact_date').split('T')[0]
+            json_fields['contact_date'] = contact_date
+            json_dict['fields'] = json_fields
+            json_text = json.dumps([json_dict])
+        return json_text
+    
 
     def custom_parser(self, json_text=None):
         """Runs json_text thru custom parsers.
