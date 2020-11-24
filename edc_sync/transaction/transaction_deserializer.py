@@ -6,6 +6,8 @@ from django_crypto_fields.cryptor import Cryptor
 from edc_device.constants import NODE_SERVER, CENTRAL_SERVER
 from edc_sync.models import IncomingTransaction
 from edc_sync_files.transaction.file_archiver import FileArchiver
+from django.core.serializers.json import DjangoJSONEncoder
+
 
 from ..constants import DELETE
 from .deserialize import deserialize
@@ -66,7 +68,6 @@ class TransactionDeserializer:
             json_text = self.custom_parser(json_text)
             json_text = self.contact_date_update(json_text)
             deserialized = next(self.deserialize(json_text=json_text))
-
  
             if not deserialize_only:
                 if transaction.action == DELETE:
@@ -85,11 +86,16 @@ class TransactionDeserializer:
         json_list = json.loads(json_text)
         json_dict = json_list[0]
         json_fields =  json_dict.get('fields')
-        if json_fields.get('contact_date'):
+        if json_fields.get('contact_date') and 'T' in json_fields.get('contact_date'):
             contact_date = json_fields.get('contact_date').split('T')[0]
             json_fields['contact_date'] = contact_date
-            json_dict['fields'] = json_fields
-            json_text = json.dumps([json_dict])
+
+        if json_fields.get('clinician_call_enrollemt'):
+            json_fields['clinician_call_enrollemt'] = (json_fields.get('clinician_call_enrollemt'),)
+
+        json_dict['fields'] = json_fields
+        json_text = json.dumps([json_dict], cls=DjangoJSONEncoder)
+
         return json_text
     
 
