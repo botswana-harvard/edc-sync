@@ -43,6 +43,9 @@ class HomeView(EdcBaseViewMixin, NavbarViewMixin, EdcSyncViewMixin, TemplateView
                 dst_tmp=app_config.tmp_folder,
                 dst_path=app_config.incoming_folder,
                 archive_path=app_config.archive_folder,
+                media_path=app_config.media_path,
+                media_dst=app_config.media_dst,
+                media_tmp=app_config.media_tmp,
                 username=app_config.user,
                 remote_host=app_config.remote_host)
         return self._action_handler
