@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 import sys
-
 from pathlib import PurePath
 
 from .loggers import LOGGING
@@ -33,7 +32,6 @@ SECRET_KEY = '4w#xs+=lrx4$mmqv+vzy^9i!(sni2eh=q_-9(#w4r20sv($2af'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -56,8 +54,7 @@ INSTALLED_APPS = [
     'edc_device.apps.AppConfig',
     'edc_sync_files.apps.AppConfig',
     'edc_sync.apps.AppConfig',
-]
-
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,7 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-]
+    ]
 
 ROOT_URLCONF = 'edc_sync.urls'
 
@@ -86,13 +83,12 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
-            ],
+                ],
+            },
         },
-    },
-]
+    ]
 
 WSGI_APPLICATION = 'edc_sync.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -102,23 +98,23 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    },
+        },
     # required for tests when acting as a server but not attempting to
     # deserialize
     'server': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    },
+        },
     # required for tests when acting as a client
     'client': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    },
+        },
     'test_server': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    },
-}
+        },
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -126,18 +122,17 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
+        },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
+        },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
+        },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
+        },
+    ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
@@ -169,8 +164,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
-
+    )
 
 GIT_DIR = str(PurePath(BASE_DIR).parent)
 # KEY_PATH = '/Volumes/keys'
@@ -186,7 +180,7 @@ EDC_SYNC_FILES_USB_VOLUME = '/Volumes/BCPP'
 LANGUAGES = (
     ('tn', 'Setswana'),
     ('en', 'English'),
-)
+    )
 DEVICE_ID = '15'
 SERVER_DEVICE_ID_LIST = ['99']
 
@@ -194,10 +188,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-    ),
-}
+        ),
+    }
 LOGGING = LOGGING
-
 
 EDC_SYNC_SERVER_IP = None
 EDC_SYNC_FILES_USER = None
@@ -205,7 +198,6 @@ EDC_SYNC_FILES_REMOTE_HOST = None
 EDC_SYNC_FILES_USB_VOLUME = None
 
 if 'test' in sys.argv:
-
     class DisableMigrations:
 
         def __contains__(self, item):
@@ -214,6 +206,7 @@ if 'test' in sys.argv:
         def __getitem__(self, item):
             return None
 
+
     MIGRATION_MODULES = DisableMigrations()
-    PASSWORD_HASHERS = ('django.contrib.auth.hashers.MD5PasswordHasher', )
+    PASSWORD_HASHERS = ('django.contrib.auth.hashers.MD5PasswordHasher',)
     # DEFAULT_FILE_STORAGE = 'inmemorystorage.InMemoryStorage'

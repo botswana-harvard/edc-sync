@@ -1,0 +1,24 @@
+{% block extra-scripts %}
+    <script type="text/javascript">
+        function updateModel() {
+            var updateModel = $.ajax();
+            updateModel.done(function (data) {
+                alert("Navigation plans updated successfully")
+            });
+        }
+    </script>
+{% endblock extra-scripts %}
+
+<div id='id-transfer-div' class="panel panel-info">
+    <div class="panel-heading">
+        Update Navigation Plans. <span id="id-div-resource-alert"></span><a><span
+            id="id-tx-spinner" class="fa fa-refresh pull-right"></span></a>
+    </div>
+    <div class="panel-body">
+        <p>
+            <span id="">Request Navigation Plans</span>
+            <a id="btn-sync" href="{{ request.get_full_path }}?update_model=update_model" class="btn btn-default pull-right"><i class="fa fa-exchange fa-fw"></i> Request
+            </a>
+        </p>
+    </div>
+</div>
