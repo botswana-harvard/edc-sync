@@ -79,3 +79,5 @@ docs/_build/
 
 # PyBuilder
 target/
+*.xml
+*.iml
