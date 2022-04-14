@@ -1,12 +1,13 @@
 import json
 import logging
 import socket
+from datetime import datetime
 
 import requests
 from django.apps import apps as django_apps
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
 from django.http.response import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -72,7 +73,7 @@ class HomeView(EdcBaseViewMixin, NavbarViewMixin, EdcSyncViewMixin, TemplateView
             recently_sent_files=self.action_handler.sent_history[0:20],
             site_models=site_sync_models.site_models,
             update_models=app_config.update_models
-            )
+        )
         return context
 
     def get(self, request, *args, **kwargs):
@@ -95,7 +96,7 @@ class HomeView(EdcBaseViewMixin, NavbarViewMixin, EdcSyncViewMixin, TemplateView
         if update_model:
             headers = {
                 'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
-                }
+            }
             # url = "https://potlako-plus-dev.bhp.org.bw/api/navigation_summary_and_plan"
             nav_plans_url = settings.NAV_PLAN_API
             evaluation_timeline_url = settings.EVALUATION_TIMELINE
@@ -108,7 +109,7 @@ class HomeView(EdcBaseViewMixin, NavbarViewMixin, EdcSyncViewMixin, TemplateView
                                                              verify=False)
             nav_plans = nav_plans_reponce.json()
             evaluation_timelines = evaluation_timelines_response.json()
-            self.update_nav_plans(nav_plans, evaluation_timelines)
+            self.update_nav_plans(nav_plans, evaluation_timelines, request)
 
         return self.render_to_response(context)
 
@@ -120,20 +121,25 @@ class HomeView(EdcBaseViewMixin, NavbarViewMixin, EdcSyncViewMixin, TemplateView
             cors_origin_whitelist = []
         return cors_origin_whitelist
 
-    def update_nav_plans(self, nav_plans, evaluation_timelines):
+    def update_nav_plans(self, nav_plans, evaluation_timelines, request):
         nav_plan_cls = django_apps.get_model(
             'potlako_subject.navigationsummaryandplan')
         evaluation_timeline_cls = django_apps.get_model(
             'potlako_subject.evaluationtimeline')
-        evaluation_timelines_batch = [evaluation_timeline_cls(
-            id=row['id'],
-            navigation_plan_id=row['navigation_plan_id'],
-            key_step=row['key_step'],
-            target_date=row['target_date'],
-            adjusted_target_date=row['adjusted_target_date'],
-            key_step_status=row['key_step_status'],
-            completion_date=row['completion_date'],
-            review_required=row['review_required'], ) for row in
+        evaluation_timelines_batch = [{
+            'id': row['id'],
+            'navigation_plan_id': row['navigation_plan_id'],
+            'key_step': row['key_step'],
+            'target_date': row['target_date'] and datetime.strptime(row['target_date'],
+                                                                    '%Y-%m-%d').date(),
+            'adjusted_target_date': row['adjusted_target_date'] and datetime.strptime(
+                row['adjusted_target_date'],
+                '%Y-%m-%d').date(),
+            'key_step_status': row['key_step_status'],
+            'completion_date': row['completion_date'] and datetime.strptime(
+                row['completion_date'],
+                '%Y-%m-%d').date(),
+            'review_required': row['review_required'], } for row in
             evaluation_timelines]
 
         nav_plans_batch = [nav_plan_cls(
@@ -142,15 +148,19 @@ class HomeView(EdcBaseViewMixin, NavbarViewMixin, EdcSyncViewMixin, TemplateView
             diagnostic_plan=row['diagnostic_plan'],
             notes=row['notes'], ) for row in
             nav_plans]
-        try:
-            evaluation_timeline_cls.objects.bulk_create(objs=evaluation_timelines_batch)
-        except IntegrityError:
-            pass
-        else:
-            print('evaluation timeline', 'Updated')
-        try:
-            nav_plan_cls.objects.bulk_create(objs=nav_plans_batch)
-        except IntegrityError:
-            pass
-        else:
-            print('nav plan', 'Updated')
+
+        for nav_plan in nav_plans:
+            try:
+                nav_plan_cls.objects.update_or_create(**nav_plan)
+            except Exception as e:
+                messages.error(request, 'Failed to update Navigation Plans')
+        messages.success(request, 'Updated Navigation Plans')
+        for evaluation_timeline in evaluation_timelines_batch:
+            try:
+                evaluation_timeline_cls.objects.update_or_create(**evaluation_timeline)
+            except Exception as e:
+                messages.error(request,
+                               f'Failed to update Evaluation Timeline {evaluation_timeline.id}')
+        messages.success(request, 'Updated Evaluation Timelines')
+
+        return messages
