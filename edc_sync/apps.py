@@ -20,6 +20,7 @@ class AppConfig(DjangoAppConfig):
     custom_json_parsers = []
     server_ip = settings.EDC_SYNC_SERVER_IP
     edc_sync_files_using = True
+    update_models=False
 
     # see edc_device for ROLE
 
