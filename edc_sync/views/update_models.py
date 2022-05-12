@@ -51,24 +51,27 @@ class UpdateModels:
         :param request: request dict from the current request for setting up messages
         :return: a message object to update the django messages for feedback
         """
+        update_nav_message = True
+        update_eva_message = True
         for nav_plan in nav_plans:
             try:
                 self.nav_plan_cls.objects.update_or_create(id=nav_plan.get('id'),
                                                            defaults=nav_plan)
             except Exception as e:
+                update_nav_message = False
                 messages.error(request,
                                f'Failed to update Navigation Plans, got error {e}')
-            else:
-                messages.success(request, 'Updated Navigation Plans')
-        for evaluation_timeline in evaluation_timelines_batch:
+
+        update_nav_message and messages.success(request, 'Updated Navigation Plans')
+        for evaluation_timeline in evaluation_timelines:
             try:
                 self.evaluation_timeline_cls.objects.update_or_create(
                     id=evaluation_timeline.get('id'),
                     defaults=evaluation_timeline)
             except Exception as e:
+                update_eva_message = False
                 messages.error(request,
                                f'Failed to update Evaluation Timeline, got error {e}')
-            else:
-                messages.success(request, 'Updated Evaluation Timelines')
 
+        update_eva_message and messages.success(request, 'Updated Evaluation Timelines')
         return messages
