@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import requests
 from django.apps import apps as django_apps
 from django.conf import settings
@@ -53,6 +55,23 @@ class UpdateModels:
         """
         update_nav_message = True
         update_eva_message = True
+
+        evaluation_timelines_batch = [{
+            'id': row['id'],
+            'navigation_plan_id': row['navigation_plan_id'],
+            'key_step': row['key_step'],
+            'target_date': row['target_date'] and datetime.strptime(row['target_date'],
+                                                                    '%Y-%m-%d').date(),
+            'adjusted_target_date': row['adjusted_target_date'] and datetime.strptime(
+                row['adjusted_target_date'],
+                '%Y-%m-%d').date(),
+            'key_step_status': row['key_step_status'],
+            'completion_date': row['completion_date'] and datetime.strptime(
+                row['completion_date'],
+                '%Y-%m-%d').date(),
+            'review_required': row['review_required'], } for row in
+            evaluation_timelines]
+
         for nav_plan in nav_plans:
             try:
                 self.nav_plan_cls.objects.update_or_create(id=nav_plan.get('id'),
@@ -63,7 +82,7 @@ class UpdateModels:
                                f'Failed to update Navigation Plans, got error {e}')
 
         update_nav_message and messages.success(request, 'Updated Navigation Plans')
-        for evaluation_timeline in evaluation_timelines:
+        for evaluation_timeline in evaluation_timelines_batch:
             try:
                 self.evaluation_timeline_cls.objects.update_or_create(
                     id=evaluation_timeline.get('id'),
