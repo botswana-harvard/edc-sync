@@ -4,6 +4,7 @@ import requests
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.contrib import messages
+from tqdm import tqdm
 
 
 class UpdateModels:
@@ -72,21 +73,24 @@ class UpdateModels:
             'review_required': row['review_required'], } for row in
             evaluation_timelines]
 
-        for nav_plan in nav_plans:
+        for nav_plan in tqdm(nav_plans):
+            nav_plan_defaults = {key: obj for key, obj in nav_plan.items() if key != 'id'}
             try:
                 self.nav_plan_cls.objects.update_or_create(id=nav_plan.get('id'),
-                                                           defaults=nav_plan)
+                                                           defaults=nav_plan_defaults)
             except Exception as e:
                 update_nav_message = False
                 messages.error(request,
                                f'Failed to update Navigation Plans, got error {e}')
 
         update_nav_message and messages.success(request, 'Updated Navigation Plans')
-        for evaluation_timeline in evaluation_timelines_batch:
+        for evaluation_timeline in tqdm(evaluation_timelines_batch):
+            eva_defaults = {key: obj for key, obj in evaluation_timeline.items() if
+                            key != 'id'}
             try:
                 self.evaluation_timeline_cls.objects.update_or_create(
                     id=evaluation_timeline.get('id'),
-                    defaults=evaluation_timeline)
+                    defaults=eva_defaults)
             except Exception as e:
                 update_eva_message = False
                 messages.error(request,
